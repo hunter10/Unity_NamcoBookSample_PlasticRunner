@@ -20,6 +20,10 @@ public class MapCreator : MonoBehaviour {
 
     private LevelControl level_control = null;
 
+    public TextAsset level_data_text = null;
+
+    private GameRoot game_root = null;
+
     private struct FloorBlock
     {
         public bool is_created;                         // 블록이 만들어졌는가.
@@ -34,9 +38,11 @@ public class MapCreator : MonoBehaviour {
         this.player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
         this.last_block.is_created = false;
         this.block_creator = this.gameObject.GetComponent<BlockCreator>();
+        this.game_root = this.gameObject.GetComponent<GameRoot>();
 
         this.level_control = new LevelControl();
         this.level_control.initialize();
+        this.level_control.loadLevelData(this.level_data_text);
 	}
 	
 	// Update is called once per frame
@@ -77,7 +83,8 @@ public class MapCreator : MonoBehaviour {
         block_position.x += BLOCK_WIDTH;
 
         //this.block_creator.createBlock(block_position);
-        this.level_control.update();
+        //this.level_control.update();
+        this.level_control.update(this.game_root.getPlayTime());
         
         // level_control에 저장된 current_block(지금 만들 블록 정보)의
         // height(높이)를 씬 상의 좌표로 변환.        

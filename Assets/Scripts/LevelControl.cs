@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 
 public class LevelData
@@ -52,6 +53,11 @@ public class LevelControl : MonoBehaviour {
 
     public int block_count = 0;
     public int level = 0;
+
+    public LevelControl()
+    {
+        Debug.Log("Level Control Construct!");
+    }
 
     private void clear_next_block(ref CreatrionInfo block)
     {
@@ -116,25 +122,26 @@ public class LevelControl : MonoBehaviour {
             switch(previous.block_type){
                 case Block.TYPE.FLOOR:                      // 이전 블록이 바닥인 경우
                     current.block_type = Block.TYPE.HOLE;   // 이번엔 구멍을 만든다
-                    current.max_count = Random.Range(level_data.hole_count.min, level_data.hole_count.max);
+                    current.max_count = UnityEngine.Random.Range(level_data.hole_count.min, level_data.hole_count.max);
                     current.height = previous.height;
                     break;
 
                 case Block.TYPE.HOLE:                       // 이전 블록이 구멍인 경우
                     current.block_type = Block.TYPE.FLOOR;  // 이번엔 바닥을 만든다.
-                    current.max_count = Random.Range(level_data.floor_count.min, level_data.floor_count.max);
+                    current.max_count = UnityEngine.Random.Range(level_data.floor_count.min, level_data.floor_count.max);
                     int height_min = previous.height + level_data.height_diff.min;
                     int height_max = previous.height + level_data.height_diff.max;
                     height_min = Mathf.Clamp(height_min, HEIGHT_MIN, HEIGHT_MAX);
                     height_max = Mathf.Clamp(height_max, HEIGHT_MIN, HEIGHT_MAX);
 
-                    current.height = Random.Range(height_min, height_max);
+                    current.height = UnityEngine.Random.Range(height_min, height_max);
                     break;
             }
         }
     }
 
-    public void update()
+    //public void update()
+    public void update(float passage_time)
     {
         // 이번에 만든 블록 개수를 증가
         this.current_block.current_count++;
@@ -149,7 +156,7 @@ public class LevelControl : MonoBehaviour {
             this.clear_next_block(ref this.next_block);
 
             // 다음에 만들 블록을 설정
-            this.update_level(ref this.next_block, this.current_block);
+            this.update_level(ref this.next_block, this.current_block, passage_time);
         }
         this.block_count++;
     }
@@ -180,11 +187,11 @@ public class LevelControl : MonoBehaviour {
 
             LevelData level_data = new LevelData();
             foreach(var word in words){
-                if(word.StartsWith("#")){
+                if(word.StartsWith("#", StringComparison.CurrentCulture)){
                     break;
                 }
                 if (word == "")
-                    break;
+                    continue;
 
                 switch(n){
                     case 0: level_data.end_time = float.Parse(word);
@@ -229,5 +236,10 @@ public class LevelControl : MonoBehaviour {
             Debug.LogError("[LevelData] Has no data. \n");
             this.level_datas.Add(new LevelData());
         }
+    }
+
+    public float getPlayerSpeed()
+    {
+        return (this.level_datas[this.level].player_speed);
     }
 }

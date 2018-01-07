@@ -36,6 +36,8 @@ public class MapCreator : MonoBehaviour {
 
 	void Start () {
         this.player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
+        this.player.level_control = this.level_control;
+
         this.last_block.is_created = false;
         this.block_creator = this.gameObject.GetComponent<BlockCreator>();
         this.game_root = this.gameObject.GetComponent<GameRoot>();
@@ -43,6 +45,8 @@ public class MapCreator : MonoBehaviour {
         this.level_control = new LevelControl();
         this.level_control.initialize();
         this.level_control.loadLevelData(this.level_data_text);
+
+        if (this.level_control == null) Debug.Log("level_control null!!"); 
 	}
 	
 	// Update is called once per frame
@@ -121,4 +125,6 @@ public class MapCreator : MonoBehaviour {
 
         return (ret);
     }
+
+
 }

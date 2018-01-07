@@ -28,6 +28,12 @@ public class PlayerControl : MonoBehaviour {
     private bool is_collided = false;           // 뭔가와 충돌했는가?
     private bool is_key_released = false;       // 버튼이 떨어졌는가?
 
+    public float current_speed = 0.0f;
+    public LevelControl level_control = null;
+
+    private float click_timer = -1.0f;          // 버튼이 눌린 후의 시간.
+    private float CLICK_GRACE_TIME = 0.5f;      // 점프하고 싶은 의사를 받아들일 시간 
+
 	// Use this for initialization
 	void Start () {
         this.next_step = STEP.RUN;
@@ -36,6 +42,7 @@ public class PlayerControl : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         Vector3 velocity = this.GetComponent<Rigidbody>().velocity;
+        this.current_speed = this.level_control.getPlayerSpeed();
         this.check_landed();                    // 착지 상태인지 체크.
 
         switch(this.step)
@@ -51,11 +58,24 @@ public class PlayerControl : MonoBehaviour {
 
         this.step_timer += Time.deltaTime;      // 경과 시간을 진행한다.
 
+        if(Input.GetMouseButtonDown(0))                 // 버튼이 눌렸으면 
+        {   
+            this.click_timer = 0.0f;                    // 타이머를 리셋 
+        }
+        else
+        {
+            if(this.click_timer >= 0.0f)                // 그렇지 않으면 
+            {
+                this.click_timer += Time.deltaTime;     // 경과 시간을 더한다.
+            }
+        }
+
         if(this.next_step == STEP.NONE)
         {
             switch (this.step)
             {
                 case STEP.RUN:
+                    /*
                     if (!this.is_landed)
                     {
                         // 달리는 중이고 착지하지 않은 경우 아무것도 하지 않는다.
@@ -67,6 +87,14 @@ public class PlayerControl : MonoBehaviour {
                             // 달리는 중이고 착지했고 왼쪽 버튼이 눌렸다면
                             // 다음 상태를 점프로 변경
                             this.next_step = STEP.JUMP;
+                        }
+                    }
+                    */
+                    if(0.0f <= this.click_timer && this.click_timer <= CLICK_GRACE_TIME)
+                    {
+                        if(this.is_landed){                 // 착지했다면 
+                            this.click_timer = -1.0f;       // 버튼이 눌리지 않은 상태를 나타내는 -1.0f 로 
+                            this.next_step = STEP.JUMP;     // 점프 상태로 한다 
                         }
                     }
                     break;
@@ -105,9 +133,15 @@ public class PlayerControl : MonoBehaviour {
             case STEP.RUN:
                 // 속도를 높인다.
                 velocity.x += PlayerControl.ACCELERATION * Time.deltaTime;
-                if(Mathf.Abs(velocity.x) > PlayerControl.SPEED_MAX)
+                //if(Mathf.Abs(velocity.x) > PlayerControl.SPEED_MAX)
+                //{
+                //    velocity.x *= PlayerControl.SPEED_MAX / Mathf.Abs(this.GetComponent<Rigidbody>().velocity.x);
+                //}
+
+                // 계산으로 구한 속도가 설정해야할 속도를 넘었다면.
+                if(Mathf.Abs(velocity.x) > this.current_speed)
                 {
-                    velocity.x *= PlayerControl.SPEED_MAX / Mathf.Abs(this.GetComponent<Rigidbody>().velocity.x);
+                    velocity.x *= this.current_speed / Mathf.Abs(velocity.x);
                 }
                 break;
 
